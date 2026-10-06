@@ -1,185 +1,192 @@
-PromisedLand Linux File Server
-==============================
+# PromisedLand Linux File Server
 
-A Linux-based file server designed for a 38-user organization with departmental file sharing, centralized permissions, scalable storage, and layered security controls.
+A secure Linux file server using **Samba, LVM, ACLs, UFW, Fail2Ban, and SSH hardening** for a 38-user organization.
 
-Overview
---------
+## Overview
 
-This project involved designing and configuring a secure file server for a fictional organization, PromisedLand, expanding its infrastructure in Independence, Missouri.
+This project involved designing and configuring a Linux-based file server for a fictional organization, PromisedLand, expanding its infrastructure in Independence, Missouri.
 
-The server was built using **Ubuntu Server 22.04 LTS** and provides centralized file storage for four departments:
+The server was built with **Ubuntu Server 22.04 LTS** and provides centralized file storage and controlled access for four departments:
 
-*   Operations
-    
-*   Applications
-    
-*   CRM
-    
-*   Finance
-    
+* Operations
+* Applications
+* CRM
+* Finance
 
-The environment uses **Samba, Linux groups, POSIX permissions, ACLs, LVM, UFW, Fail2Ban, and SSH hardening**to provide controlled and secure access to shared resources.
+The environment uses Linux groups, permissions, ACLs, and Samba to provide secure, department-based access to shared resources.
 
-Project Goals
--------------
+## Project Goals
 
-*   Provide centralized departmental file storage
-    
-*   Restrict users to the resources appropriate for their department
-    
-*   Provide read-only access for an executive user across departments
-    
-*   Use LVM to support future storage expansion
-    
-*   Provide Windows-compatible network file sharing through Samba
-    
-*   Implement multiple layers of system security
-    
-*   Automate user and group creation for consistency
-    
+* Centralize departmental file storage
+* Restrict users to their appropriate department resources
+* Provide read-only executive access across departments
+* Use LVM for scalable storage management
+* Provide Windows-compatible file sharing through Samba
+* Implement layered security controls
+* Automate user and group creation
 
-Architecture
-------------
+## Architecture
 
 The server uses two virtual disks:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Disk 1  └── Ubuntu Server OS      └── / (ext4)  Disk 2  └── LVM      └── Volume Group: vg_data          ├── lv_operations          ├── lv_applications          ├── lv_crm          └── lv_finance   `
+```text
+Disk 1
+└── Ubuntu Server OS
+    └── / (ext4)
 
-Shared directories are mounted under /srv:
+Disk 2
+└── LVM
+    └── Volume Group: vg_data
+        ├── lv_operations
+        ├── lv_applications
+        ├── lv_crm
+        └── lv_finance
+```
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   /srv/  ├── operations/  ├── applications/  ├── crm/  └── finance/   `
+Shared directories are organized under `/srv`:
 
-Technologies Used
------------------
+```text
+/srv/
+├── operations/
+├── applications/
+├── crm/
+└── finance/
+```
 
-TechnologyPurposeUbuntu Server 22.04 LTSServer operating systemSambaSMB/CIFS network file sharingLVMFlexible storage managementLinux GroupsDepartment-based access controlPOSIX ACLsGranular permissionsUFWHost-based firewallFail2BanBrute-force protectionOpenSSHSecure remote administrationNetplanStatic network configurationBashUser and group automation
+## Technologies
 
-Users and Groups
-----------------
+| Technology              | Purpose                         |
+| ----------------------- | ------------------------------- |
+| Ubuntu Server 22.04 LTS | Server operating system         |
+| Samba                   | SMB/CIFS network file sharing   |
+| LVM                     | Flexible storage management     |
+| Linux Groups            | Department-based access control |
+| POSIX ACLs              | Granular permissions            |
+| UFW                     | Host-based firewall             |
+| Fail2Ban                | Brute-force protection          |
+| OpenSSH                 | Secure remote administration    |
+| Netplan                 | Network configuration           |
+| Bash                    | User and group automation       |
 
-A total of **38 users** were created based on the organization's organizational structure.
+## Users & Groups
+
+A total of **38 users** were created based on the organization's structure.
 
 Department groups:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   operations  applications  crm  finance  exec_read   `
+```text
+operations
+applications
+crm
+finance
+exec_read
+```
 
-Users were created through a shell script rather than manually, improving consistency and reducing repetitive administrative work.
+Users were created through a Bash script to improve consistency and reduce repetitive manual configuration.
 
 Each department's users are restricted to their corresponding shared directory.
 
-An executive account, cshumaker, was configured with read-only access across the shared department directories using ACLs.
+An executive account, `cshumaker`, was configured with read-only access across the shared directories using ACLs.
 
-Storage Design
---------------
+## Storage Design
 
-The server separates the operating system from application data.
+The operating system is separated from the departmental data storage.
 
-The operating system resides on the first virtual disk, while the second disk is dedicated to departmental storage through LVM.
+The second virtual disk uses LVM with the following logical volumes:
 
-Logical volumes:
+```text
+vg_data
+├── lv_operations
+├── lv_applications
+├── lv_crm
+└── lv_finance
+```
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   vg_data  ├── lv_operations  ├── lv_applications  ├── lv_crm  └── lv_finance   `
+This structure allows departmental storage to be managed independently and provides flexibility for future expansion.
 
-This design allows individual departmental volumes to be managed and expanded independently as storage requirements grow.
-
-File Permissions
-----------------
+## File Permissions
 
 Department directories are protected using Linux groups and ACLs.
 
-For example, the executive user was granted read and execute access to departmental directories:
+Example ACL configuration:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   sudo setfacl -m u:cshumaker:rx /srv/operations  sudo setfacl -m u:cshumaker:rx /srv/applications  sudo setfacl -m u:cshumaker:rx /srv/crm  sudo setfacl -m u:cshumaker:rx /srv/finance   `
+```bash
+sudo setfacl -m u:cshumaker:rx /srv/operations
+sudo setfacl -m u:cshumaker:rx /srv/applications
+sudo setfacl -m u:cshumaker:rx /srv/crm
+sudo setfacl -m u:cshumaker:rx /srv/finance
+```
 
-Samba was then configured to provide authenticated network access to the shared directories.
+Samba was configured to provide authenticated network access to the shared directories.
 
-Security
---------
-
-Several security controls were implemented.
+## Security
 
 ### UFW
 
-The firewall was configured to restrict inbound traffic to required services, including SSH and Samba.
+Configured the firewall to allow only required services, including SSH and Samba.
 
 ### Fail2Ban
 
-Fail2Ban was configured to help protect the server against repeated authentication attempts and brute-force attacks.
+Configured Fail2Ban to help protect against repeated authentication attempts and brute-force attacks.
 
 ### SSH Hardening
 
-Remote administration was secured by disabling direct root login and restricting authentication.
+Disabled direct root login and restricted remote administration access.
 
 ### Static Networking
 
-The server was configured with a static IP address:
+Configured a static IP address using Netplan:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   192.168.100.99   `
-
-using Netplan.
+```text
+192.168.100.99
+```
 
 ### System Updates
 
-The server was maintained using Ubuntu's package management tools:
+System packages were maintained using:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   sudo apt update  sudo apt upgrade   `
+```bash
+sudo apt update
+sudo apt upgrade
+```
 
-Automation
-----------
+## Automation
 
-A Bash script was created to automate user creation based on the organizational structure.
+A Bash script was created to automate user creation and group assignment based on the organization's structure.
 
-This reduced manual configuration and helped ensure that users were consistently assigned to the correct groups.
+This reduced manual configuration and helped ensure consistent user permissions.
 
-What I Learned
---------------
+## Skills Demonstrated
 
-This project strengthened my practical experience with:
+* Linux server administration
+* Samba configuration
+* Linux permissions and ACLs
+* LVM storage management
+* User and group administration
+* Bash scripting
+* SSH security
+* Firewall configuration
+* Fail2Ban
+* Network configuration
+* Infrastructure design
 
-*   Linux server administration
-    
-*   Samba configuration
-    
-*   Linux permissions and ACLs
-    
-*   LVM storage management
-    
-*   User and group administration
-    
-*   Bash scripting
-    
-*   SSH security
-    
-*   Firewall configuration
-    
-*   Fail2Ban
-    
-*   Network configuration
-    
-*   Designing infrastructure around organizational requirements
-    
+## Project Demonstration
 
-Project Demonstration
----------------------
-
-A video walkthrough of the project is available here:
-
-[Watch the Project Demonstration](https://youtu.be/wQaYPyuvUEA)
-
-Project Documentation
----------------------
-
-The original project documentation and architecture diagrams can be included in the repository under:
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   docs/  ├── architecture/  ├── storage/  └── screenshots/   `
-
-Key Takeaway
-------------
-
-This project demonstrates how I approached a realistic systems administration scenario by translating organizational requirements into a **secure, structured, and scalable Linux file-server environment**.
-
-Project Demonstration
----------------------
+[![Watch the Project Demonstration](https://img.youtube.com/vi/wQaYPyuvUEA/maxresdefault.jpg)](https://youtu.be/wQaYPyuvUEA)
 
 [Watch the full project demonstration on YouTube](https://youtu.be/wQaYPyuvUEA)
+
+## Documentation
+
+Additional project documentation, architecture diagrams, and screenshots can be organized under:
+
+```text
+docs/
+├── architecture/
+├── storage/
+└── screenshots/
+```
+
+## Key Takeaway
+
+This project demonstrates my ability to translate organizational requirements into a **secure, structured, and scalable Linux server environment** using industry-relevant systems administration tools and practices.
